@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div>
+  {% if current_user.is_authenticated %}
+
+      {% if current_user.email_verification_token %}
+        <div class="box warn">Please verify your email. <a href="/resend_verification_token/{{ current_user.email }}">Resend Verification Email</a></div>
+      {% endif %}
+
+      {% if invite_form.errors %}
+        <div class="box bad">
+            <ul class="errors">
+                {% for field, errors in invite_form.errors.items() %}
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+      {% endif %}
+
+      {% if create_team_form.errors %}
+        <div class="box bad">
+            <ul class="errors">
+                {% for field, errors in create_team_form.errors.items() %}
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+      {% endif %}
+
+      {% if create_game_form.errors %}
+      <div class="box bad">
+          <ul class="errors">
+              {% for field, errors in create_game_form.errors.items() %}
+                  {% for error in errors %}
+                      <li>{{ error }}</li>
+                  {% endfor %}
+              {% endfor %}
+          </ul>
+      </div>
+    {% endif %}
+
+      <h1>Welcome {{ current_user.username or current_user.email }}!</h1>
+      
+<fieldset id="games">
+  <legend>Games</legend>
+  {% if games %}
+      <table>
+          <thead>
+              <tr>
+                  <th>Game ID</th>
+                  <th>Game Name</th>
+                  <th>Owner</th>
+                  <th>Actions</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for game in games %}
+                  <tr>
+                      <td>{{ game.game_id }}</td>
+                      <td>{{ game.game_name }}</td>
+                      <td>{{ game.is_owner }}</td>
+                      <td>
+                        <button onclick="document.getElementById('game_cards_dialog_{{ game.game_id }}').showModal()">View Cards</button>
+                        {% if game.is_owner %}
+                          <form method="POST" action="{{ url_for('delete_game', game_id=game.game_id) }}" style="display:inline;">
+                            {{ delete_game_form.hidden_tag() }}
+                            <button type="submit" onclick="return confirm('Are you sure you want to delete this game?');">Delete Game</button>
+                          </form>
+                        {% endif %}
+                      </td>
+                  </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+      <br>
+      <button onclick="document.getElementById('game_dialog').showModal()">Create Game</button>
+  {% else %}
+      <p>No games yet.</p>
+      <button onclick="document.getElementById('game_dialog').showModal()">Create Game</button>
+  {% endif %}
+</fieldset>
+
+<dialog id="game_dialog">
+  <form method="POST" action="/create_game">
+      <h1 class="titlebar">Create Game</h1>
+      {{ create_game_form.hidden_tag() }}
+      <div class="table rows">
+          <br>
+          <p>
+              <label>{{ create_game_form.team_id.label }}</label>
+              {{ create_game_form.team_id() }}
+          </p>
+          <p>
+              <label>{{ create_game_form.list_id.label }}</label>
+              {{ create_game_form.list_id() }}
+          </p>
+          <p>
+              <label></label>
+              {{ create_game_form.submit() }}
+              <button onclick="document.getElementById('game_dialog').close()">Close</button>
+          </p>
+      </div>
+  </form>
+</dialog>
+
+<!-- Friend management section -->
+<fieldset id="friends">
+  <legend>Friends</legend>
+  {% if friends %}
+      <table>
+          <thead>
+              <tr>
+                  <th>Email</th>
+                  <th>Username</th>
+                  <th>Verified</th>
+                  <th>Actions</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for friend in friends %}
+                  <tr>
+                      <td>{{ friend.email }}</td>
+                      <td>{{ friend.username }}</td>
+                      <td>{{ friend.email_verified }}</td>
+                      <td>
+                        <form method="POST" action="{{ url_for('delete_friend', friend_id=friend.id) }}">
+                          {{ remove_friend_form.hidden_tag() }}
+                          {{ remove_friend_form.submit() }}
+                      </form>
+                      </td>
+                  </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+      <br>
+      <button onclick="document.getElementById('invite_dialog').showModal()">Invite Friend</button>
+      <button onclick="document.getElementById('add_friend_dialog').showModal()">Add Friend by Username</button>
+  {% else %}
+      <p>No friends yet.</p>
+      <button onclick="document.getElementById('invite_dialog').showModal()">Invite Friend</button>
+      <button onclick="document.getElementById('add_friend_dialog').showModal()">Add Friend by Username</button>
+  {% endif %}
+</fieldset>
+
+<!-- Add Friend Dialog -->
+<dialog id="add_friend_dialog">
+  <form method="POST" action="{{ url_for('add_friend') }}">
+      <h1 class="titlebar">Add Friend</h1>
+      {{ add_friend_form.hidden_tag() }}
+      <div>
+          <label>{{ add_friend_form.username.label }}</label>
+          {{ add_friend_form.username() }}
+      </div>
+      <div>
+          <label></label>
+          {{ add_friend_form.submit() }}
+          <button type="button" onclick="document.getElementById('add_friend_dialog').close()">Close</button>
+      </div>
+  </form>
+</dialog>
+
+      <fieldset id="teams">
+        <legend>Teams</legend>
+        {% if teams %}
+          <table>
+            <thead>
+              <tr>
+                <th>Team ID</th>
+                <th>Team Name</th>
+                <th>Members</th>
+                <th>Owner</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for team in teams %}
+                <tr>
+                    <td>{{ team.team_id }}</td>
+                    <td>{{ team.team_name }}</td>
+                    <td>{{ team.num_members }}</td>
+                    <td>{{ team.is_owner }}</td>
+                    <td>
+                      <button onclick="document.getElementById('team_members_dialog_{{ team.team_id }}').showModal()">View Members</button>
+                      {% if team.is_owner %}
+                        <form method="POST" action="{{ url_for('delete_team', team_id=team.team_id) }}" style="display:inline;">
+                          {{ delete_team_form.hidden_tag() }}
+                          <button type="submit" onclick="return confirm('Are you sure you want to delete this team?');">Delete Team</button>
+                        </form>
+                      {% endif %}
+                    </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <br>
+          <div class="table rows">
+            <p>
+              <button onclick="document.getElementById('team_dialog').showModal()">Create Team</button>
+            </p>
+          </div>
+        {% else %}
+          <div class="table rows
+          ">
+              <p>
+                  Not a part of any teams yet.
+              </p>
+              <br>
+              <p>
+                <button onclick="document.getElementById('team_dialog').showModal()">Create Team</button>
+              </p>
+          </div>
+        {% endif %}
+      </fieldset>
+
+      <!-- Dialogs for each team -->
+      {% for team in teams %}
+      <dialog id="team_members_dialog_{{ team.team_id }}">
+        <h1 class="titlebar">Team Members - {{ team.team_name }}</h1>
+        <table>
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Joined At</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for member in team_members_data[team.team_id] %}
+            <tr>
+              <td>{{ member.username }}</td>
+              <td>{{ member.email }}</td>
+              <td>{{ member.joined_at }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <p>
+          <button onclick="document.getElementById('team_members_dialog_{{ team.team_id }}').close()">Close</button>
+        </p>
+      </dialog>
+      {% endfor %}
+
+      <dialog id="invite_dialog">
+        <form method="POST" action="/invite_user">
+          <h1 class="titlebar">Invite Friend</h1>
+          {{ invite_form.hidden_tag() }}
+          <div class="table rows">
+            <br>
+            <p>
+              <label>{{ invite_form.email.label }}</label>
+              {{ invite_form.email() }}
+            </p>
+            <p>
+                <label></label>
+                {{ invite_form.submit() }}
+                <button onclick="document.getElementById('invite_dialog').close()">Close</button>
+            </p>
+          </div>
+        </form>
+      </dialog>
+
+      <dialog id="team_dialog">
+        <form method="POST" action="/create_team">
+          <h1 class="titlebar">Create Team</h1>
+          {{ create_team_form.hidden_tag() }}
+          <div class="table rows">
+            <br>
+            <p>
+                <label>{{ create_team_form.team_name.label }}</label>
+                {{ create_team_form.team_name() }}
+            </p>
+            <p>
+                <label> {{ create_team_form.team_members.label }}</label>
+                {{ create_team_form.team_members() }}
+            </p>
+            <p>
+                <label></label>
+                {{ create_team_form.submit() }}
+                <button onclick="document.getElementById('team_dialog').close()">Close</button>
+            </p>
+          </div>
+        </form>
+      </dialog>
+
+    {% else %}
+      <h1>Welcome to Jargon Bingo!</h1>
+    {% endif %}
+</div>
+{% endblock %}

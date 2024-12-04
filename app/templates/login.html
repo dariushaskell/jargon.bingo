@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<form method="POST" action="/login">
+    {{ form.hidden_tag() }} <!-- CSRF token -->
+    <fieldset id="login_form">
+        <legend>Login Form</legend>
+        <div class="table rows">
+            <p>
+                <label>{{ form.email.label }}</label>
+                {{ form.email() }}
+            </p>
+            <p>
+                <label>{{ form.password.label }}</label>
+                {{ form.password() }}
+            </p>
+            <p>
+                <label></label>
+                {{ form.submit() }} <a href="{{ url_for('reset_password_request') }}">Forgot Password?</a>
+            </p>
+        </div>
+    </fieldset>
+</form>
+{% endblock %}

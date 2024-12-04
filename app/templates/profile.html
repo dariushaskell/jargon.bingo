@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div>
+  {% if current_user.is_authenticated %}
+      {% if current_user.email_verification_token %}
+        <div class="box warn">Please verify your email. <a href="/resend_verification_token/{{ current_user.email }}">Resend Verification Email</a></div>
+      {% endif %}
+      <fieldset id="profile_form">
+        <legend>Profile</legend>
+        <div class="table rows">
+          <p>
+            <label>Email</label>
+            <input type="text" value="{{ current_user.email }}" readonly>
+          </p>
+          <p>
+            <label>Username</label>
+            <input type="text" value="{{ current_user.username }}" readonly>
+          </p>
+          <p>
+            <label>Created</label>
+            <input type="text" value="{{ current_user.created_at }}" readonly>
+          </p>
+          <p>
+            <label>Updated</label>
+            <input type="text" value="{{ current_user.updated_at }}" readonly>
+          </p>
+        </div>
+        </fieldset>
+        <p>
+            {{ session }}
+            {{ active_sessions }}
+            {% for session in active_sessions %}
+            <table>
+              <thead>
+                <tr>
+                  <th>Session ID</th>
+                  <th>User ID</th>
+                </tr>
+              </thead>
+              <tbody>
+              <tr>
+                <td>{{ session.session_id }}</td>
+                <td>{{ session.user_id }}</td>
+              </tr>
+              </tbody>
+            </table>
+            {% endfor %}
+        </p>
+    {% else %}
+      <h1>Home Page</h1>
+      <p><a href="/login" id="qsLoginBtn">Login</a></p>
+      <p><a href="/register" id="qsRegisterBtn">Register</a></p>
+    {% endif %}
+</div>
+{% endblock %}

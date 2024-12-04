@@ -1,0 +1,72 @@
+{% extends "base.html" %} 
+
+{% block styles %}
+<style>
+    .bingo-container {
+        width: 100%;  
+        max-width: 500px;  
+        margin: 0 auto;  
+        padding: 10px;  
+        overflow: hidden;  
+        box-sizing: border-box;  
+    }
+
+    .bingo-board {
+        display: grid;
+        gap: 5px;
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-rows: repeat(5, 1fr);
+        width: 100%;  
+        max-width: 100%;  
+        aspect-ratio: 1;  
+        border: 2px solid #333;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        box-sizing: border-box;  
+    }
+
+    .bingo-cell {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: clamp(10px, 2vw, 20px);  /* Dynamically scale font size */
+        color: #333;
+        border: 1px solid #ccc;
+        background-color: #e0e0e0;
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.3s ease;
+        padding: 5px;  /* Add some padding to prevent text from touching borders */
+        overflow: hidden;  /* Prevent text overflow */
+        text-align: center;  /* Center text inside the cells */
+        word-break: break-word;  /* Break long words to fit inside the cell */
+    }
+
+    .bingo-cell:hover {
+        background-color: #d4d4d4;
+    }
+
+    .bingo-cell.active {
+        background-color: #a4c639;
+        color: white;
+    }
+</style>
+{% endblock %}
+{% block content %}
+    </style>
+
+    <div class="bingo-board">
+        {% for word in words %}
+            <div class="bingo-cell">{{ word.term }}</div>
+        {% endfor %}
+    </div>
+    
+{% endblock %}
+{% block scripts %}
+    <script>
+        document.querySelectorAll('.bingo-cell').forEach(cell => {
+            cell.addEventListener('click', () => {
+                cell.classList.toggle('active');
+            });
+        });
+    </script>
+{% endblock %}

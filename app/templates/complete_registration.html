@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Complete Registration{% endblock %}
+
+{% block styles %}
+    <style>
+        .taken {
+            color: red;
+        }
+        .available {
+            color: green;
+            
+        }
+        #username-check {
+            --rhythm: 0;
+            display: block;
+            position: relative;
+            top: -16px;
+            left: 23px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<form method="POST" action="/complete_registration/{{ token }}">
+    {{ form.hidden_tag() }}
+    {% if form.errors %}
+        <div class="box bad">
+            <ul class="errors">
+                {% for field, errors in form.errors.items() %}
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    <fieldset id="complete_registration_form">
+        <legend>Complete Registration Form</legend>
+        <div class="table rows">
+            <p>
+                <label>{{ form.username.label }}</label>
+                {{ form.username(
+                    **{
+                        'hx-post': url_for('check_username'),
+                        'hx-trigger': "keyup changed delay:500ms",
+                        'hx-target': "#username-check",
+                        'hx-swap': "outerHTML"
+                    })
+                }}
+                <span id="username-check"></span>
+            </p>
+            <p>
+                <label>{{ form.password.label }}</label>
+                {{ form.password() }}
+            </p>
+            <p>
+                <label>{{ form.confirm_password.label }}</label>
+                {{ form.confirm_password() }}
+            </p>
+            <p>
+                <label></label>
+                {{ form.submit() }}
+            </p>
+        </div>
+    </fieldset>
+</form>
+{% endblock %}
+{% block scripts %}
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+{% endblock %}
